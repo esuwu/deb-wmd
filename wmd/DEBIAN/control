@@ -1,0 +1,10 @@
+Package: wmd
+Version: 0.2.0
+Section: misc
+Priority: extra
+Architecture: all
+Depends: bash
+Essential: no
+Installed-Size: 13286071
+Maintainer: wavesplatform.com
+Description: Waves market data as systemd service

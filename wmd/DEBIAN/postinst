@@ -1,0 +1,49 @@
+#!/bin/bash
+
+# Creating directordy for logs and giving its rights
+sudo mkdir /var/log/wmd
+sudo chown syslog wmd
+
+# Creating wmd.service file and put config to
+touch wmd.service
+echo "[Unit]
+Description=WMD
+ConditionPathExists=/usr/share/wmd
+After=network.target
+
+[Service]
+Type=simple
+User=wmd
+Group=wmd
+LimitNOFILE=1024
+
+Restart=on-failure
+RestartSec=10
+startLimitIntervalSec=60
+
+WorkingDirectory=/usr/share/wmd
+ExecStart=/usr/share/wmd/wmd -db /var/lib/wmd/ -address 0.0.0.0:6990 -node mainnet-aws-ir-1.wavesnodes.com:6870 -symbols /usr/share/wmd/symbols.txt -sync-interval 1
+
+# make sure log directory exists and owned by syslog
+PermissionsStartOnly=true
+ExecStartPre=/bin/mkdir -p /var/log/wmd
+ExecStartPre=/bin/chown syslog:adm /var/log/wmd
+ExecStartPre=/bin/chmod 755 /var/log/wmd
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=wmd
+[Install]
+
+WantedBy=multi-user.target" >> wmd.service
+sudo useradd wmd -s /sbin/nologin -M
+sudo mv wmd.service /lib/systemd/system/
+sudo chmod 755 /lib/systemd/system/wmd.service
+sudo mkdir /usr/share/wmd/
+sudo chown wmd:wmd /usr/share/wmd
+sudo mkdir /var/lib/wmd
+sudo chown wmd:wmd /var/lib/wmd
+sudo cp wmd /usr/share/wmd/
+sudo cp symbols.txt /usr/share/wmd/
+
+sudo systemctl enable wmd.service
+sudo systemctl start wmd.service
